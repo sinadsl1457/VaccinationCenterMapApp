@@ -7,6 +7,7 @@
 
 import UIKit
 
+/// Showing to cell about annotation address.
 class LocationInfoTableCell: UITableViewCell {
     @IBOutlet weak var addressLabel: UILabel!
     @IBOutlet weak var localityLabel: UILabel!

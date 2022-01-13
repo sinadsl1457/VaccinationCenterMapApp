@@ -8,6 +8,7 @@
 import Foundation
 import CoreLocation
 
+/// Api Json Structure
 struct Center: Codable {
     struct CenterList: Codable {
         let address: String

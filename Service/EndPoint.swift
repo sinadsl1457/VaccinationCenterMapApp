@@ -9,6 +9,7 @@ import Foundation
 import CoreLocation
 import Moya
 
+/// Using moya get json data from server
 enum VaccinationCenterService {
     struct Param {
         let page: Int
@@ -39,11 +40,9 @@ extension VaccinationCenterService: TargetType {
         }
     }
     
-    
     var method: Moya.Method {
         return .get
     }
-    
     
     var task: Task {
         switch self {
@@ -52,10 +51,8 @@ extension VaccinationCenterService: TargetType {
         }
     }
     
-    
     var headers: [String : String]? {
         return ["Content-type": "application/json"]
     }
-    
 }
 

@@ -8,6 +8,7 @@
 import UIKit
 import CoreLocation
 
+/// Showing to cell about annotation Information
 class DetailTableViewCell: UITableViewCell {
     @IBOutlet weak var centerNameLabel: UILabel!
     @IBOutlet weak var distanceLabel: UILabel!
@@ -15,7 +16,6 @@ class DetailTableViewCell: UITableViewCell {
     
     func configure(with model: CellData) {
         centerNameLabel.text = model.centerName
-        
         let coordi = locationManager.location!.coordinate
         let myLocation = CLLocation(latitude: coordi.latitude, longitude: coordi.longitude)
         let destination = CLLocation(latitude: model.lat, longitude: model.long)
@@ -26,12 +26,7 @@ class DetailTableViewCell: UITableViewCell {
     
     override func awakeFromNib() {
         super.awakeFromNib()
-     
     }
 
 }
 
-
-extension DetailTableViewCell: CLLocationManagerDelegate {
-    
-}

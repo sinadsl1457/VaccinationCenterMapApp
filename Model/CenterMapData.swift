@@ -7,6 +7,7 @@
 
 import Foundation
 
+/// Make only the data actually use from CenterData.
 class CellData {
     init(cellModel: Center.CenterList) {
         self.centerName = cellModel.centerName

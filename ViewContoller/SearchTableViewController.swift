@@ -9,6 +9,7 @@ import UIKit
 import Moya
 import MapKit
 
+/// User can searching desired vaccination center
 class SearchTableViewController: UITableViewController {
     var handleMapSearchDelegate: HandleMapSearch? = nil
     var mapView: MKMapView!
@@ -23,6 +24,7 @@ class SearchTableViewController: UITableViewController {
     }
     
     
+    /// Get decoding data using provider and save to list
     func getCenterData() {
         provider.request(.center(VaccinationCenterService.Param(page: 1, perPage: 284))) { result in
             switch result {
@@ -36,6 +38,11 @@ class SearchTableViewController: UITableViewController {
     }
     
     
+    /// Divide cell count whether when user searching or not
+    /// - Parameters:
+    ///   - tableView: detailTableView
+    ///   - section: Int
+    /// - Returns: center list count.
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if isSearching {
             return filteredItems.count
@@ -45,6 +52,11 @@ class SearchTableViewController: UITableViewController {
     }
     
     
+    /// Display cell results differently when searched and when not searched.
+    /// - Parameters:
+    ///   - tableView: UITableView
+    ///   - indexPath: IndexPath
+    /// - Returns: cell include center name and address
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell")!
         if isSearching {
@@ -64,9 +76,13 @@ class SearchTableViewController: UITableViewController {
     }
     
     
+    /// After selecting the cell, process the event. The selected cell data is forwarded to the delegate property.
+    /// - Parameters:
+    ///   - tableView: UITableView
+    ///   - indexPath: IndexPath
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if isSearching {
-           let searchedItem = filteredItems[indexPath.row]
+            let searchedItem = filteredItems[indexPath.row]
             handleMapSearchDelegate?.storeSearchText = searchedItem.centerName
             handleMapSearchDelegate?.dropPinZoomIn(placemark: searchedItem)
             dismiss(animated: true, completion: nil)
@@ -81,12 +97,12 @@ class SearchTableViewController: UITableViewController {
 
 
 extension SearchTableViewController: UISearchResultsUpdating {
+    /// Configure searchController when user try searching in searchBar
+    /// - Parameter searchController: searchVC
     func updateSearchResults(for searchController: UISearchController) {
         guard let searchBarText = searchController.searchBar.text else { return }
         isSearching = true
-        
         filteredItems = list.filter { $0.sigungu.hasPrefix(searchBarText) || $0.sido.hasPrefix(searchBarText) }
-        
         tableView.reloadData()
     }
 }

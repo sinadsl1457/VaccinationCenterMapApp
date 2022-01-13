@@ -11,6 +11,7 @@ import MapKit
 import Moya
 
 
+/// For passing from searchviewcontroller cell data.
 protocol HandleMapSearch {
     var storeSearchText: String? { get set }
     func dropPinZoomIn(placemark: Center.CenterList)
@@ -24,26 +25,27 @@ class MapViewController: UIViewController, HandleMapSearch {
     var resultSearchController: UISearchController? = nil
     var selectedPin: MKPlacemark? = nil
     var storeSearchText: String?
-    
     var list = [Center.CenterList]()
     var provider = MoyaProvider<VaccinationCenterService>()
     var locationManager = LocationManager.shared.locationManager
    
     
     
+    /// Make move to current location
+    /// - Parameter sender: UIbutton
     @IBAction func goToCurrentLocation(_ sender: Any) {
         let locValue: CLLocationCoordinate2D = locationManager.location!.coordinate
         let span = MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
         let region = MKCoordinateRegion(center: locValue, span: span)
         mapView.setRegion(region, animated: true)
-        
     }
     
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        // Make UISearchController Functionality
+        // Integrate MapViewController
         guard let searchVC = storyboard?.instantiateViewController(withIdentifier: "SearchVC") as? SearchTableViewController else { return }
-        
         resultSearchController = UISearchController(searchResultsController: searchVC)
         resultSearchController?.searchResultsUpdater = searchVC
         
@@ -66,13 +68,14 @@ class MapViewController: UIViewController, HandleMapSearch {
         getCenterData()
         mapView.register(MKMarkerAnnotationView.self,
                          forAnnotationViewWithReuseIdentifier: NSStringFromClass(CenterAnnotaion.self))
+        searchVC.handleMapSearchDelegate = self
+        locationManager.delegate = self
         mapView.delegate = self
         currentLocationView.layer.cornerRadius = currentLocationView.frame.width / 2.0
         currentLocationView.clipsToBounds = true
         currentLocationView.contentMode = .scaleAspectFill
         
-        searchVC.handleMapSearchDelegate = self
-        
+        // Process the status according to user permission.
         if CLLocationManager.locationServicesEnabled() {
             let status: CLAuthorizationStatus
             
@@ -103,7 +106,15 @@ class MapViewController: UIViewController, HandleMapSearch {
     }
     
     
-    private func setupPlaceAnnotationView<AnnotationType: CenterAnnotaion>(for annotation: AnnotationType, on mapView: MKMapView, tintColor: UIColor, image: UIImage? = nil) -> MKAnnotationView {
+    //MARK: Helper Method
+    
+    /// Setup annotation
+    /// - Returns: Using given type, property return MKAnnotationView
+    private func setupPlaceAnnotationView<AnnotationType: CenterAnnotaion>(for annotation:
+                                                                           AnnotationType,
+                                                                        on mapView: MKMapView,
+                                                                           tintColor: UIColor,
+                                                                           image: UIImage? = nil) -> MKAnnotationView {
         let identifier = NSStringFromClass(CenterAnnotaion.self)
         let view = mapView.dequeueReusableAnnotationView(withIdentifier: identifier,
                                                          for: annotation)
@@ -121,6 +132,7 @@ class MapViewController: UIViewController, HandleMapSearch {
     
     
     
+    /// Using provider property save to list variable decoding data
     func getCenterData() {
         provider.request(.center(VaccinationCenterService.Param(page: 1, perPage: 284))) { result in
             switch result {
@@ -135,6 +147,7 @@ class MapViewController: UIViewController, HandleMapSearch {
     }
     
     
+    /// Given decoding data do mapping to CenterAnnotaion
     func addAnnotation(model: [Center.CenterList]) {
         let annotations: [CenterAnnotaion] = model.map {
             let location = CLLocationCoordinate2D(latitude: Double($0.lat) ?? 0, longitude: Double($0.lng) ?? 0)
@@ -148,11 +161,11 @@ class MapViewController: UIViewController, HandleMapSearch {
 
 
 extension MapViewController: MKMapViewDelegate {
-    func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
-        
-    }
-    
-    
+    /// when user didtap annotation present with the same id detailVC
+    /// - Parameters:
+    ///   - mapView: current mapview
+    ///   - view: annotation
+    ///   - control:annotation's uicontrol
     func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
         if let anno = view.annotation as? CenterAnnotaion {
             if let detailVC = storyboard?.instantiateViewController(withIdentifier: "DetailVC") as? DetailViewController {
@@ -166,6 +179,12 @@ extension MapViewController: MKMapViewDelegate {
     }
     
     
+    
+    /// Can make custom annotation
+    /// - Parameters:
+    ///   - mapView: mapView
+    ///   - annotation: mkAnnotation
+    /// - Returns: annotationView
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
         guard !(annotation is MKUserLocation) else { return nil }
         
@@ -213,6 +232,11 @@ extension MapViewController: CLLocationManagerDelegate {
     }
     
     
+    
+    /// when user launch app right away showing current user location zoom in.
+    /// - Parameters:
+    ///   - manager: _
+    ///   - locations: _
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         let locValue: CLLocationCoordinate2D = locationManager.location!.coordinate
         let span = MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
@@ -224,11 +248,11 @@ extension MapViewController: CLLocationManagerDelegate {
 
 
 extension MapViewController {
+    
+    /// when user searched cell didtap and then given center data make new annotation and add mapView.
+    /// Apointing use animation zoom in specific annotation(Center)
+    /// - Parameter placemark: Center.CenterList from searchViewcontroller.
     func dropPinZoomIn(placemark: Center.CenterList) {
-        // cache the pin
-        // clear existing pins
-        //        mapView.removeAnnotations(mapView.annotations)
-        
         let coordinate = CLLocationCoordinate2D(latitude: Double(placemark.lat) ?? 0, longitude: Double(placemark.lng) ?? 0)
         
         let annotation: CenterAnnotaion = CenterAnnotaion(coordinate: coordinate, id: placemark.id, title: placemark.centerName, subtitle: placemark.address, hospitalName: placemark.org)

@@ -9,6 +9,8 @@ import UIKit
 import MapKit
 import CoreLocation
 
+
+/// Present TableView about annotation Info
 class DetailViewController: UIViewController {
     @IBOutlet weak var detailTableView: UITableView!
     
@@ -19,24 +21,32 @@ class DetailViewController: UIViewController {
     var locationManager = LocationManager.shared.locationManager
     
     
+    /// when user didtap make go to AppleInMap
+    /// - Parameter sender: UIbutton
     @IBAction func goToInMap(_ sender: Any) {
         openInMap()
-        
     }
     
+    
+    /// When user didtap present apple share fuction.
+    /// - Parameter sender: Uibutton
     @IBAction func share(_ sender: UIButton) {
-        let activityVC = UIActivityViewController(activityItems: [center!.centerName, center!.address], applicationActivities: nil)
-        activityVC.popoverPresentationController?.sourceView = sender
-        present(activityVC, animated: true, completion: nil)
-        activityVC.completionWithItemsHandler = { (activityType, completed:Bool, returnedItems:[Any]?, error: Error?) in
-            
-            if completed  {
-                self.dismiss(animated: true, completion: nil)
+        if let centerName = center?.centerName, let address = center?.address {
+            let activityVC = UIActivityViewController(activityItems: [centerName, address], applicationActivities: nil)
+            activityVC.popoverPresentationController?.sourceView = sender
+            present(activityVC, animated: true, completion: nil)
+            activityVC.completionWithItemsHandler = { (activityType, completed:Bool, returnedItems:[Any]?, error: Error?) in
+                
+                if completed  {
+                    self.dismiss(animated: true, completion: nil)
+                }
             }
         }
     }
     
     
+    /// Make a phone call
+    /// - Parameter sender: UIbutton
     @IBAction func makeCalling(_ sender: Any) {
         if let center = center {
             if let url = URL(string: "tel://\(center.phoneNumber)") {
@@ -52,7 +62,9 @@ class DetailViewController: UIViewController {
         }
     }
     
-    func openInMap() {
+    
+    /// Calculate the location of the actual user and the location of the annotation and provide it a route.
+   private func openInMap() {
         let userCoor = locationManager.location!.coordinate
         let source = MKMapItem(placemark: MKPlacemark(coordinate: userCoor))
         source.name = "Current Location"
@@ -125,7 +137,3 @@ extension DetailViewController: UITableViewDelegate {
     }
 }
 
-
-extension DetailViewController: CLLocationManagerDelegate {
-    
-}

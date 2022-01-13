@@ -8,6 +8,8 @@
 import Foundation
 import CoreLocation
 
+/// LocationManager Singletone Class
+/// Prevent to duplicate declare instance
 class LocationManager {
     static let shared = LocationManager()
     private init() { }
